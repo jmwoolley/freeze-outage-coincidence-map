@@ -1,1 +1,94 @@
-<!doctype html><meta charset="utf-8"><title>Freeze Outage Coincidence Map</title><h1>Freeze Outage Coincidence Map</h1><p>GitHub Pages capability test.</p>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Coincident Freeze and Power Outage History</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="styles.css?v=20260706e">
+</head>
+<body>
+  <main class="app">
+    <section class="toolbar">
+      <div>
+        <h1>Coincident Freeze and Power Outage History</h1>
+        <p id="subtitle">Loading county screening data</p>
+      </div>
+      <div class="controls">
+        <label class="range-field">
+          <span class="label-row">Year range <span class="help" title="Select the first and last full calendar years included in the map calculation. Drag either handle; the selected range is always between the two handles.">?</span></span>
+          <span class="range-stack">
+            <input id="startYear" type="range" min="2014" max="2014" step="1" value="2014">
+            <input id="endYear" type="range" min="2014" max="2014" step="1" value="2014">
+          </span>
+          <span id="yearRangeValue"></span>
+        </label>
+        <label>
+          <span class="label-row">Condition <span class="help" title="Choose whether the map counts freezing temperature hours, power outage hours, or hours when freezing temperature and outage occur at the same time.">?</span></span>
+          <select id="condition"></select>
+        </label>
+        <label>
+          <span class="label-row">Outage filter <span class="help" title="Minimum reported number or percent of customers without power in the county during an interval. Any reported outage can include very small outage counts.">?</span></span>
+          <select id="outage"></select>
+        </label>
+        <label>
+          <span class="label-row">Temperature filter <span class="help" title="Outdoor air temperature threshold at the county centroid. Used for freezing-temperature-only and freezing-during-outage conditions.">?</span></span>
+          <select id="temperature"></select>
+        </label>
+        <label>
+          <span class="label-row">Duration at condition <span class="help" title="Only count continuous runs where the selected condition lasts at least this many hours. The counted value is the full duration of qualifying runs.">?</span></span>
+          <input id="duration" type="range" min="0" max="0" step="1" value="0">
+          <span id="durationValue"></span>
+        </label>
+        <label>
+          <span class="label-row">Color scale <span class="help" title="Choose whether county color represents the total hours in the selected year range or the largest single-year total within that range.">?</span></span>
+          <select id="scaleMode">
+            <option value="total">Sum of hours at condition in year range</option>
+            <option value="maxAnnual">Max sum of hours at condition in one year</option>
+          </select>
+        </label>
+      </div>
+    </section>
+    <section class="content">
+      <div id="map"></div>
+      <aside class="panel">
+        <h2 id="countyName">Select a county</h2>
+        <dl>
+          <div><dt>Sum of hours at condition in year range <span class="help" title="Total hours in the selected year range where the selected condition occurred in qualifying continuous runs.">?</span></dt><dd id="exposureHours">-</dd></div>
+          <div><dt>Max sum of hours at condition in one year <span class="help" title="Largest annual total among the years currently selected. This identifies the highest-count year, not necessarily the most severe event.">?</span></dt><dd id="maxAnnualExposure">-</dd></div>
+          <div><dt>Max continuous hours at condition <span class="help" title="Longest single continuous run meeting the selected condition and filter settings within the selected year range.">?</span></dt><dd id="maxContinuous">-</dd></div>
+          <div><dt>Number of customers in county <span class="help" title="Modeled county customer count from the EAGLE-I supplemental customer-count file.">?</span></dt><dd id="customers">-</dd></div>
+        </dl>
+        <details class="narrative" open>
+          <summary>Metric explanation</summary>
+          <p id="metricNarrative">Select a county to see a county-specific interpretation of the active filters and metrics.</p>
+        </details>
+        <div class="legend">
+          <h3>Legend</h3>
+          <div id="legendScale"></div>
+        </div>
+        <div class="note">
+          <h3>Data sources</h3>
+          <p>Historical county outage data: <a href="https://figshare.com/s/417a4f147cf1357a5391">DOE/ORNL EAGLE-I</a>.</p>
+          <p id="availableYears">Available outage years loading.</p>
+          <p>Historical county-centroid weather: <a href="https://open-meteo.com/en/docs/historical-weather-api">Open-Meteo archive</a>, with <a href="https://power.larc.nasa.gov/">NASA POWER</a> fallback for 2022-2024.</p>
+          <p>County geography: U.S. Census Gazetteer and <a href="https://github.com/topojson/us-atlas">us-atlas</a>.</p>
+          <p>Basemap: <a href="https://carto.com/attribution/">CARTO</a>, using <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>.</p>
+          <p>Map rendering: <a href="https://leafletjs.com/">Leaflet</a>.</p>
+        </div>
+      </aside>
+    </section>
+  </main>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/topojson-client@3"></script>
+  <script>
+    window.MAP_CONFIG = {
+      areaLabel: "the United States",
+      dataUrl: "data/exposure.json",
+      initialView: { center: [39.5, -98.35], zoom: 4 },
+      version: "20260706e"
+    };
+  </script>
+  <script src="app.js?v=20260706e"></script>
+</body>
+</html>
