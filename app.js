@@ -3,10 +3,26 @@ const appVersion = config.version || "20260706e";
 const dataUrl = config.dataUrl || "data/exposure.json";
 const areaLabel = config.areaLabel || "the United States";
 const initialView = config.initialView || { center: [39.5, -98.35], zoom: 4 };
-const map = L.map("map", { zoomControl: true, attributionControl: false }).setView(initialView.center, initialView.zoom);
-L.tileLayer("https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png", {
-  maxZoom: 10
-}).addTo(map);
+const map = L.map("map", { zoomControl: true, attributionControl: false, maxZoom: 10 })
+  .setView(initialView.center, initialView.zoom);
+const geographyPane = map.createPane("baseGeography");
+geographyPane.style.zIndex = 350;
+geographyPane.style.pointerEvents = "none";
+const boundaryPane = map.createPane("stateBorders");
+boundaryPane.style.zIndex = 450;
+boundaryPane.style.pointerEvents = "none";
+
+fetch("data/countries-50m.json").then(response => {
+  if (!response.ok) throw new Error(`Basemap request failed: ${response.status}`);
+  return response.json();
+}).then(world => {
+  L.geoJSON(topojson.feature(world, world.objects.countries), {
+    pane: "baseGeography",
+    renderer: L.canvas({ pane: "baseGeography" }),
+    interactive: false,
+    style: { color: "#b5bec2", weight: 0.7, fillColor: "#f5f5f2", fillOpacity: 1 }
+  }).addTo(map);
+}).catch(error => console.warn("Country basemap unavailable:", error));
 
 const colors = ["#f7fbff", "#d6e9f2", "#9fc9da", "#5e9eb8", "#23708f", "#083d56"];
 let exposure;
@@ -317,6 +333,12 @@ Promise.all([
         mouseout: () => layer.resetStyle(lyr)
       });
     }
+  }).addTo(map);
+  const states = topojson.mesh(topology, topology.objects.states, (a, b) => a !== b);
+  L.geoJSON(states, {
+    pane: "stateBorders",
+    interactive: false,
+    style: { color: "#475760", weight: 1, opacity: 0.55 }
   }).addTo(map);
   map.setView(initialView.center, initialView.zoom);
 }).catch(err => {
